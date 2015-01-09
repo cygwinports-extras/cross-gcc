@@ -1,0 +1,122 @@
+NAME="cross-gcc"
+VERSION=4.9.2
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="GCC for Newlib toolchains"
+DESCRIPTION="The GNU Compiler Collection includes front ends for C, C++,
+Objective-C, Fortran, Java, and Ada, as well as libraries for these languages
+(libstdc++, libgcj, etc.).  This package provides cross-compilers for the
+Newlib embedded platforms."
+HOMEPAGE="http://gcc.gnu.org/"
+
+case ${VERSION} in
+*.*-20[1-9][0-9][01][0-9][0-3][0-9])
+	SRC_URI="mirror://gcc/snapshots/${VERSION}/gcc-${VERSION}.tar.bz2" ;;
+*)	SRC_URI="mirror://gnu/gcc/gcc-${VERSION}/gcc-${VERSION}.tar.bz2" ;;
+esac
+SRC_DIR="gcc-${VERSION}"
+PATCH_URI="
+	4.9-lto-plugin-soname.patch
+	4.8-textdomain.patch
+	4.9-bfin-c6x-PR63681.patch
+	4.9-c6x-PR57295.patch
+	4.9-ia64-unwind.patch
+"
+
+# way too big to bother
+RESTRICT="debuginfo"
+
+# avr-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64401
+# cr16-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64424
+# fr30-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64408
+# iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
+# m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64403
+# mep-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64402
+# or1k-elf: GCC 5.0 ?
+# xstormy16-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64407
+targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cris-elf
+	 epiphany-elf fido-elf frv-elf h8300-elf i386-elf ia64-elf
+	 lm32-elf m32r-elf m68k-elf mcore-elf
+	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
+	 nds32be-elf nds32le-elf nios2-elf
+	 powerpc-elf powerpc-eabi powerpc-eabisim
+	 powerpcle-elf powerpcle-eabi powerpcle-eabisim
+	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
+	 tic6x-elf v850-elf x86_64-elf mmix)
+
+PKG_NAMES="${NAME}-common"
+cross_gcc_common_CONTENTS="usr/share/doc/ usr/share/locale/"
+
+for tgt in ${targets[*]}
+do
+	tgtname=${tgt%-gnu*}
+	PKG_NAMES+=" ${tgtname}-gcc"
+	declare ${tgtname//[-\.]/_}_gcc_SUMMARY="GCC compiler for ${tgt%-*} newlib platform"
+	declare ${tgtname//[-\.]/_}_gcc_REQUIRES="${NAME}-common ${tgt}-binutils ${tgt}-newlib"
+	declare ${tgtname//[-\.]/_}_gcc_CONTENTS="usr/bin/$tgt-* usr/lib/gcc/$tgt/ usr/share/man/man1/$tgt-*"
+done
+
+src_compile() {
+	local with_headers disable_libs limits_h_test
+
+	CYGCONF_SOURCE=${S}
+
+	for tgt in ${targets[*]}
+	do
+		[ ! -d ${B}/$tgt ] || continue
+		mkdir -p ${B}/$tgt
+		pushd ${B}/$tgt
+
+		if [ -f /usr/$tgt/sys-include/limits.h ]
+		then
+			with_headers=
+			disable_libs=
+			limits_h_test=true
+		else
+			with_headers="--without-headers"
+			disable_libs="--disable-libquadmath --disable-libssp --disable-libstdc++-v3"
+			limits_h_test=false
+		fi
+
+		cygconf --libexecdir=/usr/lib \
+			--target=$tgt \
+			$with_headers \
+			--enable-languages=c,c++,lto \
+			--disable-shared --enable-static \
+			--enable-multilib \
+			--enable-version-specific-runtime-libs \
+			--disable-libatomic \
+			--disable-libgomp \
+			--disable-libitm \
+			$disable_libs \
+			--disable-libstdcxx-pch \
+			--with-gnu-as --with-gnu-ld \
+			--with-newlib \
+			--with-cloog-include=/usr/include/cloog-isl \
+			--without-libiconv-prefix --without-libintl-prefix \
+			--with-system-zlib
+#		cygmake LIMITS_H_TEST=$limits_h_test
+		make ${MAKEOPTS} -k LIMITS_H_TEST=$limits_h_test && touch ../$tgt.stamp || true
+
+		popd
+	done
+}
+
+src_install() {
+	for tgt in ${targets[*]}
+	do
+		pushd ${B}/$tgt
+		cyginstall -j1
+		popd
+	done
+
+	# Remove Cygwin-host libiberty.a
+	rm -f ${D}/usr/lib/libiberty.a
+
+	find ${D} -name '*-gdb.py' -delete
+
+	# conflicts with native gcc
+	rm -fr ${D}/usr/share/{info,man/man7}
+}
+
+KEEP_LA_FILES="none"

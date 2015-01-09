@@ -1,0 +1,12 @@
+--- origsrc/gcc-4.9.2/libgcc/unwind-generic.h	2014-01-02 16:25:22.000000000 -0600
++++ src/gcc-4.9.2/libgcc/unwind-generic.h	2014-12-24 13:29:11.363925400 -0600
+@@ -221,7 +221,9 @@ _Unwind_SjLj_Resume_or_Rethrow (struct _
+    compatible with the standard ABI for IA-64, we inline these.  */
+ 
+ #ifdef __ia64__
++#ifndef inhibit_libc
+ #include <stdlib.h>
++#endif
+ 
+ static inline _Unwind_Ptr
+ _Unwind_GetDataRelBase (struct _Unwind_Context *_C)

@@ -1,0 +1,92 @@
+ gcc/config/c6x/c6x.md                             |  2 +-
+ gcc/config/c6x/predicates.md                      | 13 +++++++
+ gcc/testsuite/gcc.target/tic6x/misaligned-store.c | 46 +++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 1 deletion(-)
+ create mode 100644 gcc/testsuite/gcc.target/tic6x/misaligned-store.c
+
+diff --git a/gcc/config/c6x/c6x.md b/gcc/config/c6x/c6x.md
+index e1c6f9a..379e6dd 100644
+--- a/gcc/config/c6x/c6x.md
++++ b/gcc/config/c6x/c6x.md
+@@ -775,7 +775,7 @@
+ 		       UNSPEC_MISALIGNED_ACCESS))]
+   "TARGET_INSNS_64"
+ {
+-  if (memory_operand (operands[0], <MODE>mode))
++  if (memory_operand (operands[0], <MODE>mode) || volatile_mem_operand (operands[0], <MODE>mode))
+     {
+       emit_insn (gen_movmisalign<mode>_store (operands[0], operands[1]));
+       DONE;
+diff --git a/gcc/config/c6x/predicates.md b/gcc/config/c6x/predicates.md
+index 1a2fe8f..4aeb29d 100644
+--- a/gcc/config/c6x/predicates.md
++++ b/gcc/config/c6x/predicates.md
+@@ -224,3 +224,16 @@
+       gcc_unreachable ();
+     }
+ })
++
++;; Return 1 if the operand is in volatile memory.  Note that during the
++;; RTL generation phase, memory_operand does not return TRUE for volatile
++;; memory references.  So this function allows us to recognize volatile
++;; references where it's safe.
++(define_predicate "volatile_mem_operand"
++  (and (and (match_code "mem")
++            (match_test "MEM_VOLATILE_P (op)"))
++       (if_then_else (match_test "reload_completed")
++         (match_operand 0 "memory_operand")
++         (if_then_else (match_test "reload_in_progress")
++           (match_test "strict_memory_address_p (mode, XEXP (op, 0))")
++           (match_test "memory_address_p (mode, XEXP (op, 0))")))))
+diff --git a/gcc/testsuite/gcc.target/tic6x/misaligned-store.c b/gcc/testsuite/gcc.target/tic6x/misaligned-store.c
+new file mode 100644
+index 0000000..5c41382
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/tic6x/misaligned-store.c
+@@ -0,0 +1,46 @@
++/* { dg-do compile } */
++/* { dg-options "-O2 -march=c64x+" } */
++/* { dg-final { scan-assembler-times "stnw" 3 } } */
++/* { dg-final { scan-assembler-times "stw" 2 } } */
++
++/* should generate stnw */
++void fn_lit_odd (void)
++{
++  *(volatile int *)1L = 0;
++}
++
++/* should generate stnw */
++void fn_lit_m2 (void)
++{
++  *(volatile int *)2L = 0;
++}
++
++/* should generate stw */
++void fn_lit_m4 (void)
++{
++  *(volatile int *)4L = 0;
++}
++
++/* should generate stnw */
++void fn_or_1 (volatile int * iptr)
++{
++  volatile int * ptr = (volatile int *)((int)iptr | 1);
++  *ptr = 0;
++}
++
++/* For now this one is failing */
++#if 0
++/* should generate stnw */
++void fn_or_2 (volatile int * iptr)
++{
++  volatile int * ptr = (volatile int *)((int)iptr | 2);
++  *ptr = 0;
++}
++#endif
++
++/* should generate stw */
++void fn_or_4 (volatile int * iptr)
++{
++  volatile int * ptr = (volatile int *)((int)iptr | 4);
++  *ptr = 0;
++}
