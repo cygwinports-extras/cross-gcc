@@ -1,5 +1,5 @@
 NAME="cross-gcc"
-VERSION=4.9.2
+VERSION=5.2.0
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="GCC for Newlib toolchains"
@@ -16,33 +16,30 @@ case ${VERSION} in
 esac
 SRC_DIR="gcc-${VERSION}"
 PATCH_URI="
-	4.9-lto-plugin-soname.patch
+	5.2-lto-plugin-soname.patch
 	4.8-textdomain.patch
-	4.9-bfin-c6x-PR63681.patch
-	4.9-c6x-PR57295.patch
-	4.9-fr30-PR64408.patch
 	4.9-ia64-unwind.patch
+	5.2-frv-r222519.patch
+	5.2-sh-PR67049.patch
+	5.2-v850-msoft-float.patch
 "
 
 # way too big to bother
 RESTRICT="debuginfo"
 
-# avr-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64401
-# cr16-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64424
 # iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
-# m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64403
+# m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64375
 # mep-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64402
-# or1k-elf: GCC 5.0 ?
-# xstormy16-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64407
-targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cris-elf
+# sh64-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67061
+targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
 	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
 	 lm32-elf m32r-elf m68k-elf mcore-elf
 	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
 	 nds32be-elf nds32le-elf nios2-elf
 	 powerpc-elf powerpc-eabi powerpc-eabisim
 	 powerpcle-elf powerpcle-eabi powerpcle-eabisim
-	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
-	 tic6x-elf v850-elf x86_64-elf mmix)
+	 rl78-elf rx-elf sh-elf sparc-elf sparc64-elf spu-elf
+	 tic6x-elf v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"
 cross_gcc_common_CONTENTS="usr/share/doc/ usr/share/locale/"
@@ -92,7 +89,6 @@ src_compile() {
 			--disable-libstdcxx-pch \
 			--with-gnu-as --with-gnu-ld \
 			--with-newlib \
-			--with-cloog-include=/usr/include/cloog-isl \
 			--without-libiconv-prefix --without-libintl-prefix \
 			--with-system-zlib
 #		cygmake LIMITS_H_TEST=$limits_h_test

@@ -1,0 +1,13 @@
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67049
+
+--- origsrc/gcc-5.2.0/gcc/config/sh/sh.md	2015-07-10 04:50:18.000000000 -0500
++++ src/gcc-5.2.0/gcc/config/sh/sh.md	2015-07-29 10:52:43.201997400 -0500
+@@ -10579,7 +10579,7 @@ label:
+   if (TARGET_SHMEDIA)
+     {
+       rtx tr = gen_rtx_REG (Pmode, TR0_REG);
+-      rtx pic = operands[0];
++      rtx pic = operands[1];
+       rtx lab = PATTERN (gen_call_site ());
+       rtx insn, equiv;
+ 

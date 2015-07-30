@@ -1,0 +1,92 @@
+https://gcc.gnu.org/ml/gcc-patches/2015-04/msg01284.html
+https://gcc.gnu.org/viewcvs/gcc?view=revision&revision=222519
+
+Index: libgcc/config.host
+===================================================================
+--- libgcc/config.host	(revision 222305)
++++ libgcc/config.host	(working copy)
+@@ -469,13 +469,13 @@ fr30-*-elf)
+ 	;;
+ frv-*-elf)
+ 	tmake_file="$tmake_file frv/t-frv t-fdpbit"
+-	tm_file="$tm_file frv/frv-abi.h"
++	tm_file="$tm_file frv/elf-lib.h frv/frv-abi.h"
+ 	# Don't use crtbegin.o, crtend.o.
+ 	extra_parts="frvbegin.o frvend.o"
+ 	;;
+ frv-*-*linux*)
+ 	tmake_file="$tmake_file frv/t-frv frv/t-linux t-fdpbit"
+-	tm_file="$tm_file frv/frv-abi.h"
++	tm_file="$tm_file frv/elf-lib.h frv/frv-abi.h"
+ 	;;
+ h8300-*-rtems*)
+ 	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
+Index: libgcc/config/frv/frvbegin.c
+===================================================================
+--- libgcc/config/frv/frvbegin.c	(revision 222305)
++++ libgcc/config/frv/frvbegin.c	(working copy)
+@@ -26,7 +26,6 @@
+    This file was originally taken from the file crtstuff.c in the
+    main compiler directory, and simplified.  */
+ 
+-#include "defaults.h"
+ #include <stddef.h>
+ #include "../libgcc/unwind-dw2-fde.h"
+ #include "gbl-ctors.h"
+Index: libgcc/config/frv/elf-lib.h
+===================================================================
+--- libgcc/config/frv/elf-lib.h	(revision 0)
++++ libgcc/config/frv/elf-lib.h	(revision 0)
+@@ -0,0 +1,26 @@
++/* Target macros for the FRV port of GCC.
++   Copyright (C) 2015 Free Software Foundation, Inc.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 3, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++Under Section 7 of GPL version 3, you are granted additional
++permissions described in the GCC Runtime Library Exception, version
++3.1, as published by the Free Software Foundation.
++
++You should have received a copy of the GNU General Public License and
++a copy of the GCC Runtime Library Exception along with this program;
++see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
++<http://www.gnu.org/licenses/>.  */
++
++#ifdef __FRV_FDPIC__
++#define CRT_GET_RFIB_DATA(dbase) \
++  ({ extern void *_GLOBAL_OFFSET_TABLE_; (dbase) = &_GLOBAL_OFFSET_TABLE_; })
++#endif
+Index: libgcc/config/frv/frvend.c
+===================================================================
+--- libgcc/config/frv/frvend.c	(revision 222305)
++++ libgcc/config/frv/frvend.c	(working copy)
+@@ -23,7 +23,6 @@
+    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+    <http://www.gnu.org/licenses/>.  */
+ 
+-#include "defaults.h"
+ #include <stddef.h>
+ #include "../libgcc/unwind-dw2-fde.h"
+ 
+Index: gcc/config/frv/frv.h
+===================================================================
+--- gcc/config/frv/frv.h	(revision 222305)
++++ gcc/config/frv/frv.h	(working copy)
+@@ -2125,9 +2125,4 @@ enum frv_builtins
+ 
+ #define CPU_UNITS_QUERY 1
+ 
+-#ifdef __FRV_FDPIC__
+-#define CRT_GET_RFIB_DATA(dbase) \
+-  ({ extern void *_GLOBAL_OFFSET_TABLE_; (dbase) = &_GLOBAL_OFFSET_TABLE_; })
+-#endif
+-
+ #endif /* __FRV_H__ */
