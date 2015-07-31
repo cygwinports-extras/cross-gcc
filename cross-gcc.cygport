@@ -21,6 +21,7 @@ PATCH_URI="
 	4.9-ia64-unwind.patch
 	5.2-frv-r222519.patch
 	5.2-sh-PR67049.patch
+	5.2-sh-PR67061.patch
 	5.2-v850-msoft-float.patch
 "
 
@@ -30,7 +31,6 @@ RESTRICT="debuginfo"
 # iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
 # m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64375
 # mep-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64402
-# sh64-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67061
 targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
 	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
 	 lm32-elf m32r-elf m68k-elf mcore-elf
@@ -38,7 +38,7 @@ targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
 	 nds32be-elf nds32le-elf nios2-elf
 	 powerpc-elf powerpc-eabi powerpc-eabisim
 	 powerpcle-elf powerpcle-eabi powerpcle-eabisim
-	 rl78-elf rx-elf sh-elf sparc-elf sparc64-elf spu-elf
+	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
 	 tic6x-elf v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"
@@ -64,7 +64,7 @@ src_compile() {
 		mkdir -p ${B}/$tgt
 		pushd ${B}/$tgt
 
-		if [ -f /usr/$tgt/sys-include/limits.h ]
+		if [ -f /usr/$tgt/sys-include/limits.h ] && ! defined BOOTSTRAP
 		then
 			with_headers=
 			disable_libs=
