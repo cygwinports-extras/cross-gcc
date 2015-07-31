@@ -20,6 +20,7 @@ PATCH_URI="
 	4.8-textdomain.patch
 	4.9-ia64-unwind.patch
 	5.2-frv-r222519.patch
+	5.2-m32r-attributes.patch
 	5.2-sh-PR67049.patch
 	5.2-sh-PR67061.patch
 	5.2-v850-msoft-float.patch
