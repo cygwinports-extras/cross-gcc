@@ -1,5 +1,5 @@
 NAME="cross-gcc"
-VERSION=5.2.0
+VERSION=5.3.0
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="GCC for Newlib toolchains"
@@ -21,9 +21,9 @@ PATCH_URI="
 	4.9-ia64-unwind.patch
 	5.2-frv-r222519.patch
 	5.2-m32r-attributes.patch
-	5.2-sh-PR67049.patch
-	5.2-sh-PR67061.patch
 	5.2-v850-msoft-float.patch
+	5.3-v850-PR65501.patch
+	5.3-newlib-stdint.patch
 "
 
 # way too big to bother
@@ -31,17 +31,14 @@ RESTRICT="debuginfo"
 
 # iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
 # m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64375
-# mep-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64402
-# v850-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65501
 targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
 	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
 	 lm32-elf m32r-elf m68k-elf mcore-elf
 	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
 	 nds32be-elf nds32le-elf nios2-elf
 	 powerpc-elf powerpc-eabi powerpc-eabisim
-	 powerpcle-elf powerpcle-eabi powerpcle-eabisim
 	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
-	 tic6x-elf x86_64-elf xstormy16-elf mmix)
+	 tic6x-elf v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"
 cross_gcc_common_CONTENTS="usr/share/doc/ usr/share/locale/"
@@ -77,6 +74,13 @@ src_compile() {
 			limits_h_test=false
 		fi
 
+		arch_config=
+		case $tgt in
+		arm-*)
+			arch_config="--with-multilib-list=aprofile"
+		;;
+		esac
+
 		cygconf --libexecdir=/usr/lib \
 			--target=$tgt \
 			$with_headers \
@@ -85,16 +89,19 @@ src_compile() {
 			--enable-multilib \
 			--enable-version-specific-runtime-libs \
 			--disable-libatomic \
+			--disable-libcilkrts \
 			--disable-libgomp \
 			--disable-libitm \
+			--disable-libvtv \
 			$disable_libs \
 			--disable-libstdcxx-pch \
+			$arch_config \
 			--with-gnu-as --with-gnu-ld \
 			--with-newlib \
 			--without-libiconv-prefix --without-libintl-prefix \
 			--with-system-zlib
-#		cygmake LIMITS_H_TEST=$limits_h_test
-		make ${MAKEOPTS} -k LIMITS_H_TEST=$limits_h_test && touch ../$tgt.stamp || true
+		cygmake LIMITS_H_TEST=$limits_h_test && touch ../$tgt.stamp
+#		make ${MAKEOPTS} -k LIMITS_H_TEST=$limits_h_test && touch ../$tgt.stamp || true
 
 		popd
 	done
@@ -106,6 +113,12 @@ src_install() {
 		pushd ${B}/$tgt
 		cyginstall -j1
 		popd
+
+		# clean-up include-fixed, fixincludes
+		mv ${D}/usr/lib/gcc/$tgt/${VERSION}/include-fixed/*limits.h \
+		   ${D}/usr/lib/gcc/$tgt/${VERSION}/include/
+		rm -fr ${D}/usr/lib/gcc/$tgt/${VERSION}/include-fixed/
+		rm -fr ${D}/usr/lib/gcc/$tgt/${VERSION}/install-tools/
 	done
 
 	# Remove Cygwin-host libiberty.a

@@ -1,0 +1,122 @@
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65501
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=68271
+
+--- origsrc/gcc-5.3.0/gcc/c-family/c-pragma.c	2015-02-27 04:44:43.000000000 -0600
++++ src/gcc-5.3.0/gcc/c-family/c-pragma.c	2016-03-02 17:26:02.675352700 -0600
+@@ -1314,7 +1314,7 @@ c_register_pragma_1 (const char *space,
+ 
+       /* The C++ front end allocates 6 bits in cp_token; the C front end
+ 	 allocates 7 bits in c_token.  At present this is sufficient.  */
+-      gcc_assert (id < 64);
++      gcc_assert (id < 256);
+     }
+ 
+   cpp_register_deferred_pragma (parse_in, space, name, id,
+--- origsrc/gcc-5.3.0/gcc/cp/parser.c	2015-11-25 13:56:12.000000000 -0600
++++ src/gcc-5.3.0/gcc/cp/parser.c	2016-02-28 19:01:11.904115300 -0600
+@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.
+ 
+ static cp_token eof_token =
+ {
+-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, false, false, 0, { NULL }
++  CPP_EOF, RID_MAX, 0, false, false, false, 0, { NULL }
+ };
+ 
+ /* The various kinds of non integral constant we encounter. */
+@@ -779,7 +779,6 @@ cp_lexer_get_preprocessor_token (cp_lexe
+     = c_lex_with_flags (&token->u.value, &token->location, &token->flags,
+ 			lexer == NULL ? 0 : C_LEX_STRING_NO_JOIN);
+   token->keyword = RID_MAX;
+-  token->pragma_kind = PRAGMA_NONE;
+   token->purged_p = false;
+   token->error_reported = false;
+ 
+@@ -844,13 +843,6 @@ cp_lexer_get_preprocessor_token (cp_lexe
+ 	default:            token->keyword = C_RID_CODE (token->u.value);
+ 	}
+     }
+-  else if (token->type == CPP_PRAGMA)
+-    {
+-      /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
+-      token->pragma_kind = ((enum pragma_kind)
+-			    TREE_INT_CST_LOW (token->u.value));
+-      token->u.value = NULL_TREE;
+-    }
+ }
+ 
+ /* Update the globals input_location and the input file stack from TOKEN.  */
+@@ -2583,6 +2575,18 @@ cp_parser_is_keyword (cp_token* token, e
+   return token->keyword == keyword;
+ }
+ 
++/* Return TOKEN's pragma_kind if it is CPP_PRAGMA, otherwise
++   PRAGMA_NONE. */
++
++static enum pragma_kind
++cp_parser_pragma_kind (cp_token* token)
++{
++  if (token->type != CPP_PRAGMA)
++    return PRAGMA_NONE;
++  /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
++  return (enum pragma_kind) TREE_INT_CST_LOW (token->u.value);
++}
++
+ /* If not parsing tentatively, issue a diagnostic of the form
+       FILE:LINE: MESSAGE before TOKEN
+    where TOKEN is the next token in the input stream.  MESSAGE
+@@ -30872,7 +30876,7 @@ cp_parser_omp_sections_scope (cp_parser
+ 
+   stmt = push_stmt_list ();
+ 
+-  if (cp_lexer_peek_token (parser->lexer)->pragma_kind != PRAGMA_OMP_SECTION)
++  if (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer)) != PRAGMA_OMP_SECTION)
+     {
+       substmt = cp_parser_omp_structured_block (parser);
+       substmt = build1 (OMP_SECTION, void_type_node, substmt);
+@@ -30887,7 +30891,7 @@ cp_parser_omp_sections_scope (cp_parser
+       if (tok->type == CPP_EOF)
+ 	break;
+ 
+-      if (tok->pragma_kind == PRAGMA_OMP_SECTION)
++      if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SECTION)
+ 	{
+ 	  cp_lexer_consume_token (parser->lexer);
+ 	  cp_parser_require_pragma_eol (parser, tok);
+@@ -32503,7 +32507,7 @@ cp_parser_omp_construct (cp_parser *pars
+   char p_name[sizeof "#pragma omp teams distribute parallel for simd"];
+   omp_clause_mask mask (0);
+ 
+-  switch (pragma_tok->pragma_kind)
++  switch (cp_parser_pragma_kind (pragma_tok))
+     {
+     case PRAGMA_OACC_CACHE:
+       stmt = cp_parser_oacc_cache (parser, pragma_tok);
+@@ -32889,7 +32893,7 @@ cp_parser_initial_pragma (cp_token *firs
+   tree name = NULL;
+ 
+   cp_lexer_get_preprocessor_token (NULL, first_token);
+-  if (first_token->pragma_kind != PRAGMA_GCC_PCH_PREPROCESS)
++  if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
+     return;
+ 
+   cp_lexer_get_preprocessor_token (NULL, first_token);
+@@ -32962,7 +32966,7 @@ cp_parser_pragma (cp_parser *parser, enu
+   gcc_assert (pragma_tok->type == CPP_PRAGMA);
+   parser->lexer->in_pragma = true;
+ 
+-  id = pragma_tok->pragma_kind;
++  id = cp_parser_pragma_kind (pragma_tok);
+   if (id != PRAGMA_OMP_DECLARE_REDUCTION)
+     cp_ensure_no_omp_declare_simd (parser);
+   switch (id)
+--- origsrc/gcc-5.3.0/gcc/cp/parser.h	2015-01-05 06:33:28.000000000 -0600
++++ src/gcc-5.3.0/gcc/cp/parser.h	2016-02-28 19:03:03.684275700 -0600
+@@ -47,8 +47,6 @@ typedef struct GTY (()) cp_token {
+   ENUM_BITFIELD (rid) keyword : 8;
+   /* Token flags.  */
+   unsigned char flags;
+-  /* Identifier for the pragma.  */
+-  ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
+   /* True if this token is from a context where it is implicitly extern "C" */
+   BOOL_BITFIELD implicit_extern_c : 1;
+   /* True if an error has already been reported for this token, such as a
