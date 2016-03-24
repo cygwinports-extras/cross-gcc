@@ -1,0 +1,107 @@
+--- origsrc/gcc-5.3.0/libstdc++-v3/configure	2015-11-26 07:51:04.000000000 -0600
++++ src/gcc-5.3.0/libstdc++-v3/configure	2016-03-22 23:47:32.556098400 -0500
+@@ -27940,12 +27937,15 @@ else
+   # on a hosted environment.
+   if test "x${with_newlib}" = "xyes"; then
+     os_include_dir="os/newlib"
+-    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
++    # GLIBCXX_CHECK_STDLIB_SUPPORT
++    $as_echo "#define HAVE_AT_QUICK_EXIT 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_QUICK_EXIT 1" >>confdefs.h
+ 
+-    # GLIBCXX_CHECK_STDLIB_SUPPORT
+     $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_STRTOLD 1" >>confdefs.h
++
+ 
+     $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
+ 
+@@ -27965,22 +27965,44 @@ else
+ 
+     $as_echo "#define HAVE_FABSF 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_FINITE 1" >>confdefs.h
++
++    $as_echo "#define HAVE_FINITEF 1" >>confdefs.h
++
+     $as_echo "#define HAVE_FLOORF 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_FMODF 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_FREXPF 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
++
++    $as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
++
++    $as_echo "#define HAVE_ISINF 1" >>confdefs.h
++
++    $as_echo "#define HAVE_ISINFF 1" >>confdefs.h
++
++    $as_echo "#define HAVE_ISNAN 1" >>confdefs.h
++
++    $as_echo "#define HAVE_ISNANF 1" >>confdefs.h
++
+     $as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_LOG10F 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_LOGF 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_MODF 1" >>confdefs.h
++
+     $as_echo "#define HAVE_MODFF 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_POWF 1" >>confdefs.h
+ 
++    $as_echo "#define HAVE_SINCOS 1" >>confdefs.h
++
++    $as_echo "#define HAVE_SINCOSF 1" >>confdefs.h
++
+     $as_echo "#define HAVE_SINF 1" >>confdefs.h
+ 
+     $as_echo "#define HAVE_SINHF 1" >>confdefs.h
+--- origsrc/gcc-5.3.0/libstdc++-v3/configure.ac	2015-11-24 07:25:07.000000000 -0600
++++ src/gcc-5.3.0/libstdc++-v3/configure.ac	2016-03-22 23:43:14.621844900 -0500
+@@ -294,10 +294,11 @@ else
+   # on a hosted environment.
+   if test "x${with_newlib}" = "xyes"; then
+     os_include_dir="os/newlib"
+-    AC_DEFINE(HAVE_HYPOT)
+-
+     # GLIBCXX_CHECK_STDLIB_SUPPORT
++    AC_DEFINE(HAVE_AT_QUICK_EXIT)
++    AC_DEFINE(HAVE_QUICK_EXIT)
+     AC_DEFINE(HAVE_STRTOF)
++    AC_DEFINE(HAVE_STRTOLD)
+ 
+     AC_DEFINE(HAVE_ACOSF)
+     AC_DEFINE(HAVE_ASINF)
+@@ -308,14 +309,25 @@ else
+     AC_DEFINE(HAVE_COSHF)
+     AC_DEFINE(HAVE_EXPF)
+     AC_DEFINE(HAVE_FABSF)
++    AC_DEFINE(HAVE_FINITE)
++    AC_DEFINE(HAVE_FINITEF)
+     AC_DEFINE(HAVE_FLOORF)
+     AC_DEFINE(HAVE_FMODF)
+     AC_DEFINE(HAVE_FREXPF)
++    AC_DEFINE(HAVE_HYPOT)
++    AC_DEFINE(HAVE_HYPOTF)
++    AC_DEFINE(HAVE_ISINF)
++    AC_DEFINE(HAVE_ISINFF)
++    AC_DEFINE(HAVE_ISNAN)
++    AC_DEFINE(HAVE_ISNANF)
+     AC_DEFINE(HAVE_LDEXPF)
+     AC_DEFINE(HAVE_LOG10F)
+     AC_DEFINE(HAVE_LOGF)
++    AC_DEFINE(HAVE_MODF)
+     AC_DEFINE(HAVE_MODFF)
+     AC_DEFINE(HAVE_POWF)
++    AC_DEFINE(HAVE_SINCOS)
++    AC_DEFINE(HAVE_SINCOSF)
+     AC_DEFINE(HAVE_SINF)
+     AC_DEFINE(HAVE_SINHF)
+     AC_DEFINE(HAVE_SQRTF)

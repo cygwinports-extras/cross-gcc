@@ -24,6 +24,8 @@ PATCH_URI="
 	5.2-v850-msoft-float.patch
 	5.3-v850-PR65501.patch
 	5.3-newlib-stdint.patch
+	5.3-newlib-funcs.patch
+	5.3-glibcxx-use-c99.patch
 "
 
 # way too big to bother
