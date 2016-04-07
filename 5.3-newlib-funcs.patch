@@ -18,13 +18,15 @@
  
      $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
  
-@@ -27965,22 +27965,44 @@ else
+@@ -27965,22 +27965,46 @@ else
  
      $as_echo "#define HAVE_FABSF 1" >>confdefs.h
  
 +    $as_echo "#define HAVE_FINITE 1" >>confdefs.h
 +
 +    $as_echo "#define HAVE_FINITEF 1" >>confdefs.h
++
++    $as_echo "#define HAVE_FINITEL 1" >>confdefs.h
 +
      $as_echo "#define HAVE_FLOORF 1" >>confdefs.h
  
@@ -79,12 +81,13 @@
  
      AC_DEFINE(HAVE_ACOSF)
      AC_DEFINE(HAVE_ASINF)
-@@ -308,14 +309,25 @@ else
+@@ -308,14 +309,26 @@ else
      AC_DEFINE(HAVE_COSHF)
      AC_DEFINE(HAVE_EXPF)
      AC_DEFINE(HAVE_FABSF)
 +    AC_DEFINE(HAVE_FINITE)
 +    AC_DEFINE(HAVE_FINITEF)
++    AC_DEFINE(HAVE_FINITEL)
      AC_DEFINE(HAVE_FLOORF)
      AC_DEFINE(HAVE_FMODF)
      AC_DEFINE(HAVE_FREXPF)

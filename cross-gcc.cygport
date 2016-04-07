@@ -21,7 +21,6 @@ PATCH_URI="
 	4.9-ia64-unwind.patch
 	5.2-frv-r222519.patch
 	5.2-m32r-attributes.patch
-	5.2-v850-msoft-float.patch
 	5.3-v850-PR65501.patch
 	5.3-newlib-stdint.patch
 	5.3-newlib-funcs.patch
