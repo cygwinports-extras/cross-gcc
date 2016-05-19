@@ -1,5 +1,5 @@
 NAME="cross-gcc"
-VERSION=5.3.0
+VERSION=6.1.0
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="GCC for Newlib toolchains"
@@ -18,13 +18,9 @@ SRC_DIR="gcc-${VERSION}"
 PATCH_URI="
 	5.2-lto-plugin-soname.patch
 	4.8-textdomain.patch
-	4.9-ia64-unwind.patch
-	5.2-frv-r222519.patch
-	5.2-m32r-attributes.patch
-	5.3-v850-PR65501.patch
-	5.3-newlib-stdint.patch
 	5.3-newlib-funcs.patch
-	5.3-glibcxx-use-c99.patch
+	6.1-glibcxx-use-c99.patch
+	6.1-libstdc++-newlib-size_t.patch
 "
 
 # way too big to bother
@@ -33,12 +29,12 @@ RESTRICT="debuginfo"
 # iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
 # m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64375
 targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
-	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
-	 lm32-elf m32r-elf m68k-elf mcore-elf
+	 epiphany-elf fido-elf fr30-elf frv-elf ft32-elf h8300-elf
+	 i386-elf ia64-elf lm32-elf m32r-elf m68k-elf mcore-elf
 	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
 	 nds32be-elf nds32le-elf nios2-elf
 	 powerpc-elf powerpc-eabi powerpc-eabisim
-	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
+	 rl78-elf rx-elf sh-elf sparc-elf sparc64-elf spu-elf
 	 tic6x-elf v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"

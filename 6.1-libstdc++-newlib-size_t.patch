@@ -1,0 +1,62 @@
+--- origsrc/gcc-6.1.0/libstdc++-v3/acinclude.m4	2016-05-12 18:54:30.366752400 -0500
++++ src/gcc-6.1.0/libstdc++-v3/acinclude.m4	2016-05-16 18:56:32.862263300 -0500
+@@ -4405,8 +4405,12 @@ AC_DEFUN([GLIBCXX_CHECK_SIZE_T_MANGLING]
+                        [glibcxx_cv_size_t_mangling=y], [
+           AC_TRY_COMPILE([],
+                          [extern __SIZE_TYPE__ x; extern unsigned short x;],
+-                         [glibcxx_cv_size_t_mangling=t],
+-                         [glibcxx_cv_size_t_mangling=x])
++                         [glibcxx_cv_size_t_mangling=t], [
++            AC_TRY_COMPILE([],
++                           [extern __SIZE_TYPE__ x; extern unsigned __int20 x;],
++                           [glibcxx_cv_size_t_mangling=u6uint20],
++                           [glibcxx_cv_size_t_mangling=x])
++          ])
+         ])
+       ])
+     ])
+--- origsrc/gcc-6.1.0/libstdc++-v3/config/os/newlib/os_defines.h	2016-01-29 04:52:08.000000000 -0600
++++ src/gcc-6.1.0/libstdc++-v3/config/os/newlib/os_defines.h	2016-05-16 21:31:50.377937600 -0500
+@@ -53,9 +53,9 @@
+ // their dtors are called
+ #define _GLIBCXX_THREAD_ATEXIT_WIN32 1
+ 
++#endif /* __CYGWIN__ */
++
+ // See libstdc++/69506
+ #define _GLIBCXX_USE_WEAK_REF 0
+ 
+ #endif
+-
+-#endif
+--- origsrc/gcc-6.1.0/libstdc++-v3/configure	2016-05-12 18:54:30.441761900 -0500
++++ src/gcc-6.1.0/libstdc++-v3/configure	2016-05-16 21:41:19.012645000 -0500
+@@ -80509,10 +80509,28 @@ _ACEOF
+ if ac_fn_c_try_compile "$LINENO"; then :
+   glibcxx_cv_size_t_mangling=t
+ else
++
++            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++/* end confdefs.h.  */
++
++int
++main ()
++{
++extern __SIZE_TYPE__ x; extern unsigned __int20 x;
++  ;
++  return 0;
++}
++_ACEOF
++if ac_fn_c_try_compile "$LINENO"; then :
++  glibcxx_cv_size_t_mangling=u6uint20
++else
+   glibcxx_cv_size_t_mangling=x
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ 
++fi
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ 

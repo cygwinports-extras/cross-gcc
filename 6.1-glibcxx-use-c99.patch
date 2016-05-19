@@ -1,0 +1,46 @@
+Newlib is missing support for long double math (real and complex) when
+it is different from double.  However, AFAICS nothing dependent on just
+_GLIBCXX_USE_C99 requires any complex math.
+
+--- origsrc/gcc-6.1.0/libstdc++-v3/acinclude.m4	2016-04-05 14:03:46.000000000 -0500
++++ src/gcc-6.1.0/libstdc++-v3/acinclude.m4	2016-05-12 18:50:22.638294900 -0500
+@@ -1137,7 +1137,6 @@
+ 
+     # Option parsed, now set things appropriately.
+     if test x"$glibcxx_cv_c99_math_cxx98" = x"no" ||
+-       test x"$glibcxx_cv_c99_complex_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_stdio_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_stdlib_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_wchar_cxx98" = x"no"; then
+@@ -1145,7 +1144,7 @@
+     else
+       AC_DEFINE(_GLIBCXX_USE_C99, 1,
+         [Define if C99 functions or macros from <wchar.h>, <math.h>,
+-        <complex.h>, <stdio.h>, and <stdlib.h> can be used or exposed.])
++        <stdio.h>, and <stdlib.h> can be used or exposed.])
+     fi
+ 
+     gcc_no_link="$ac_save_gcc_no_link"
+--- origsrc/gcc-6.1.0/libstdc++-v3/config.h.in	2016-02-04 17:47:21.000000000 -0600
++++ src/gcc-6.1.0/libstdc++-v3/config.h.in	2016-05-12 18:51:10.277344300 -0500
+@@ -838,8 +838,8 @@
+    in <cuchar>. */
+ #undef _GLIBCXX_USE_C11_UCHAR_CXX11
+ 
+-/* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
+-   <stdio.h>, and <stdlib.h> can be used or exposed. */
++/* Define if C99 functions or macros from <wchar.h>, <math.h>, <stdio.h>,
++   and <stdlib.h> can be used or exposed. */
+ #undef _GLIBCXX_USE_C99
+ 
+ /* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
+--- origsrc/gcc-6.1.0/libstdc++-v3/configure	2016-05-12 18:33:06.823263100 -0500
++++ src/gcc-6.1.0/libstdc++-v3/configure	2016-05-12 18:53:23.239728400 -0500
+@@ -17205,7 +17205,6 @@
+ 
+     # Option parsed, now set things appropriately.
+     if test x"$glibcxx_cv_c99_math_cxx98" = x"no" ||
+-       test x"$glibcxx_cv_c99_complex_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_stdio_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_stdlib_cxx98" = x"no" ||
+        test x"$glibcxx_cv_c99_wchar_cxx98" = x"no"; then
