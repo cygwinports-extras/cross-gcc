@@ -1,5 +1,5 @@
 NAME="cross-gcc"
-VERSION=6.1.0
+VERSION=6.4.0
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="GCC for Newlib toolchains"
@@ -11,8 +11,8 @@ HOMEPAGE="http://gcc.gnu.org/"
 
 case ${VERSION} in
 *.*-20[1-9][0-9][01][0-9][0-3][0-9])
-	SRC_URI="mirror://gcc/snapshots/${VERSION}/gcc-${VERSION}.tar.bz2" ;;
-*)	SRC_URI="mirror://gnu/gcc/gcc-${VERSION}/gcc-${VERSION}.tar.bz2" ;;
+	SRC_URI="mirror://gcc/snapshots/${VERSION}/gcc-${VERSION}.tar.xz" ;;
+*)	SRC_URI="mirror://gnu/gcc/gcc-${VERSION}/gcc-${VERSION}.tar.xz" ;;
 esac
 SRC_DIR="gcc-${VERSION}"
 PATCH_URI="
@@ -20,7 +20,7 @@ PATCH_URI="
 	4.8-textdomain.patch
 	5.3-newlib-funcs.patch
 	6.1-glibcxx-use-c99.patch
-	6.1-libstdc++-newlib-size_t.patch
+	6.4-newlib-ssp.patch
 "
 
 # way too big to bother
@@ -67,7 +67,7 @@ src_compile() {
 			limits_h_test=true
 		else
 			with_headers="--without-headers"
-			disable_libs="--disable-libquadmath --disable-libssp --disable-libstdc++-v3"
+			disable_libs="--disable-libquadmath --disable-libstdc++-v3"
 			limits_h_test=false
 		fi
 
@@ -89,6 +89,7 @@ src_compile() {
 			--disable-libcilkrts \
 			--disable-libgomp \
 			--disable-libitm \
+			--disable-libssp \
 			--disable-libvtv \
 			$disable_libs \
 			--disable-libstdcxx-pch \
